@@ -5,11 +5,14 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -19,8 +22,8 @@ import com.soar.music.R;
 import com.soar.music.adapters.MusicListAdapter;
 import com.soar.music.helpers.MusicMainHelper;
 import com.soar.music.interfaces.MusicMainInter;
+import com.soar.music.interfaces.MusicPlayTimeLisenter;
 import com.soar.music.interfaces.MusicScanLisenter;
-import com.soar.music.interfaces.OnItemClickLisenter;
 import com.soar.music.model.AllMusic;
 import com.soar.music.model.MusicInfo;
 import com.soar.music.savemanager.DataManager;
@@ -34,6 +37,7 @@ import java.util.ArrayList;
 
 public class MusicMainActivity extends AppCompatActivity {
 
+    private final static int PLAY_TOTAL_TIME = 360*1000 ;// 6分钟
     private LayoutFrames layoutFrames;
     private final MusicMainInter musicMainHelper = new MusicMainHelper();
 
@@ -54,13 +58,32 @@ public class MusicMainActivity extends AppCompatActivity {
     private SettingLayout settingLayout;
 
 
+    private MusicPlayTimeLisenter musicPlayTimeLisenter = new MusicPlayTimeLisenter() {
+        @Override
+        public void updateTimeUI(long mill) {
+            Log.e("soar" , "test ---");
+            playLayout.updateTime(mill);
+        }
+    };
+
+
+    private Handler handler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+        }
+    };
+
+
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             callBack = (SoarPlayService.MyBinder)service;
+            callBack.setMusicList(musicList);
+            callBack.setPlayTimeLisenter(musicPlayTimeLisenter);
         }
-
         @Override
+
         public void onServiceDisconnected(ComponentName name) {
             callBack = null;
         }
@@ -77,6 +100,12 @@ public class MusicMainActivity extends AppCompatActivity {
         initData();
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+    }
+
     private void initView(){
         layoutFrames = (LayoutFrames)findViewById(R.id.layout_frames);
         initLayoutFrames();
@@ -86,35 +115,19 @@ public class MusicMainActivity extends AppCompatActivity {
         listView = (ListView)findViewById(R.id.music_list);
         root = (LinearLayout)findViewById(R.id.main_root);
 
-        musicListAdapter = new MusicListAdapter(this, new OnItemClickLisenter() {
 
-            private float x , y ;
+        musicListAdapter = new MusicListAdapter(this);
+        listView.setAdapter(musicListAdapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(View view, int position , MotionEvent event) {
-                switch (event.getAction()){
-                    case MotionEvent.ACTION_DOWN:
-                        x = event.getX();
-                        y = event.getY();
-
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        if(Math.abs(event.getX() - x) < 10 && Math.abs(event.getY() - y) < 10){
-                            Intent intent = new Intent(MusicMainActivity.this, SoarPlayService.class);
-                            intent.putParcelableArrayListExtra("MUSIC_LIST", musicList);
-                            intent.putExtra("CURRENT_POSITION", position);
-                            startService(intent);
-                            bindService(intent, serviceConnection, Service.BIND_AUTO_CREATE);
-                            mCurrentMusicInfo = musicList.get(position);
-                            layoutFrames.changeStatus(LayoutFrames.STATE_PLAY);
-                            musicMainHelper.blueMainUI(MusicMainActivity.this , root , layoutFrames);
-                            playLayout.updateUI(mCurrentMusicInfo);
-                        }
-                        break;
-                }
-
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                callBack.playMusicByPosition(position);
+                mCurrentMusicInfo = musicList.get(position);
+                layoutFrames.changeStatus(LayoutFrames.STATE_PLAY);
+                musicMainHelper.blueMainUI(MusicMainActivity.this , root , layoutFrames);
+                playLayout.updateUI(mCurrentMusicInfo);
             }
         });
-        listView.setAdapter(musicListAdapter);
         scanButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -123,6 +136,8 @@ public class MusicMainActivity extends AppCompatActivity {
                     public void onFinish(ArrayList<MusicInfo>  list) {
                         musicListAdapter.setListData(list);
                         musicList = list;
+                        Intent intent = new Intent(MusicMainActivity.this, SoarPlayService.class);
+                        bindService(intent, serviceConnection, Service.BIND_AUTO_CREATE);
 
                     }
                 });
@@ -164,13 +179,19 @@ public class MusicMainActivity extends AppCompatActivity {
 
 
 
-    private void initData(){
+    private void initData() {
         dataManager = musicMainHelper.initDataManager();
-        AllMusic allMusic = dataManager.getObject(Keys.MUSIC_INFO , AllMusic.class);
-        if(allMusic != null && allMusic.getList() != null && allMusic.getList().size()!= 0){
+        AllMusic allMusic = dataManager.getObject(Keys.MUSIC_INFO, AllMusic.class);
+        if (allMusic != null && allMusic.getList() != null && allMusic.getList().size() != 0) {
             musicList = allMusic.getList();
             musicListAdapter.setListData(allMusic.getList());
+            Intent intent = new Intent(MusicMainActivity.this, SoarPlayService.class);
+            bindService(intent, serviceConnection, Service.BIND_AUTO_CREATE);
         }
+
+
     }
+
+
 
 }

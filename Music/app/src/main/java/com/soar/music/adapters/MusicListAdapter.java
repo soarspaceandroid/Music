@@ -2,14 +2,12 @@ package com.soar.music.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.soar.music.R;
-import com.soar.music.interfaces.OnItemClickLisenter;
 import com.soar.music.model.MusicInfo;
 
 import java.util.ArrayList;
@@ -22,11 +20,9 @@ public class MusicListAdapter extends BaseAdapter {
     private List<MusicInfo> listData = new ArrayList<>();
     private LayoutInflater layoutInflater ;
     private Context context ;
-    private OnItemClickLisenter onItemClickLisenter;
 
-    public MusicListAdapter(Context context , OnItemClickLisenter onItemClickLisenter) {
+    public MusicListAdapter(Context context) {
         this.context = context;
-        this.onItemClickLisenter = onItemClickLisenter;
         layoutInflater = LayoutInflater.from(context);
     }
 
@@ -48,13 +44,6 @@ public class MusicListAdapter extends BaseAdapter {
             viewHolder = (ViewHolder) convertView.getTag();
         }
         viewHolder.nameText.setText(listData.get(position).getName());
-        convertView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                onItemClickLisenter.onItemClick(v , position , event);
-                return true;
-            }
-        });
         return convertView;
     }
 

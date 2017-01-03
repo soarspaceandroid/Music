@@ -23,4 +23,6 @@ public interface MusicMainInter {
     void blueMainUI(Context context , View rootView , LayoutFrames layoutFrames);
 
 
+
+
 }

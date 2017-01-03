@@ -23,6 +23,7 @@ import java.util.ArrayList;
  */
 public class MusicMainHelper implements MusicMainInter{
 
+
     @Override
     public DataManager initDataManager() {
         return getDataManager();
@@ -53,6 +54,9 @@ public class MusicMainHelper implements MusicMainInter{
     public void blueMainUI(Context context ,View rootView  ,LayoutFrames layoutFrames) {
         layoutFrames.displayBack(rootView);
     }
+
+
+
 
     /**
      * scan music

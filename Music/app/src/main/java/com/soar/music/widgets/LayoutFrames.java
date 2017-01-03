@@ -257,7 +257,6 @@ public class LayoutFrames extends FrameLayout {
         machine.changeToState(STATE_NONE);
     }
 
-
     /**
      * change status
      * @param status
