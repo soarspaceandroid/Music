@@ -3,12 +3,11 @@ package com.soar.music.widgets;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.widget.LinearLayout;
 
 /**
  * Created by gaofei on 2016/12/30.
  */
-public class PlayListItem extends LinearLayout {
+public class PlayListItem extends ParentLinearLayout {
     public PlayListItem(Context context) {
         super(context);
     }

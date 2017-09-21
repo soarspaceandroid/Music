@@ -8,6 +8,7 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.soar.music.R;
+import com.soar.music.interfaces.ItemClickLisenter;
 import com.soar.music.model.MusicInfo;
 
 import java.util.ArrayList;
@@ -20,10 +21,12 @@ public class MusicListAdapter extends BaseAdapter {
     private List<MusicInfo> listData = new ArrayList<>();
     private LayoutInflater layoutInflater ;
     private Context context ;
+    private ItemClickLisenter itemClickLisenter;
 
-    public MusicListAdapter(Context context) {
+    public MusicListAdapter(Context context,ItemClickLisenter itemClickLisenter) {
         this.context = context;
         layoutInflater = LayoutInflater.from(context);
+        this.itemClickLisenter = itemClickLisenter;
     }
 
     @Override
@@ -44,6 +47,14 @@ public class MusicListAdapter extends BaseAdapter {
             viewHolder = (ViewHolder) convertView.getTag();
         }
         viewHolder.nameText.setText(listData.get(position).getName());
+        convertView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(itemClickLisenter != null){
+                    itemClickLisenter.clickCallBack(position);
+                }
+            }
+        });
         return convertView;
     }
 

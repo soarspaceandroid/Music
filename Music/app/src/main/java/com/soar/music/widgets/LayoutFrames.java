@@ -4,7 +4,6 @@ import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -113,10 +112,8 @@ public class LayoutFrames extends FrameLayout {
                     case MotionEvent.ACTION_DOWN:
                         downX = event.getX();
                         downY = event.getY();
-                        Log.e("soar" , "down "+downX+"   "+downY);
                         break;
                     case MotionEvent.ACTION_MOVE:
-                        Log.e("soar" , "move "+event.getX()+"   "+event.getY());
                         if(Math.abs(event.getX() - downX)  > Math.abs(event.getY() - downY) ){
                             // 横滑
                             if(event.getX() - downX > 0){
@@ -152,7 +149,6 @@ public class LayoutFrames extends FrameLayout {
 
                         break;
                     case MotionEvent.ACTION_UP:
-                        Log.e("soar" , "up "+event.getX()+"   "+event.getY());
                         if(Math.abs(event.getX() - downX)  > Math.abs(event.getY() - downY) ){
                             // 横滑
                             if(Math.abs(event.getX() - downX) > getResources().getDisplayMetrics().widthPixels/3){
@@ -267,6 +263,13 @@ public class LayoutFrames extends FrameLayout {
         }
     }
 
+
+    public int getStatus(){
+        if(machine != null){
+            return machine.getLocalCurrentState();
+        }
+        return STATE_NONE;
+    }
 
 
     public void displayBack(View rootview){

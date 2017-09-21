@@ -4,10 +4,11 @@ import android.content.Context;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -19,7 +20,7 @@ import com.soar.music.utils.DateUtils;
 /**
  * Created by gaofei on 2016/12/27.
  */
-public class PlayLayout extends LinearLayout {
+public class PlayLayout extends ParentLinearLayout {
 
     public final static int UPDATEUI = 1000;
 
@@ -50,6 +51,7 @@ public class PlayLayout extends LinearLayout {
         initView();
     }
     public void setCallBack(SoarPlayService.CallBack callBack){
+        Log.e("soar" , "set back ");
         this.callBack = callBack;
     }
 
@@ -74,8 +76,8 @@ public class PlayLayout extends LinearLayout {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                float scale = seekBar.getProgress()/100;
-                callBack.seekTo((int)(scale * musicInfo.getLength() / 1000));
+                float scale = (float)seekBar.getProgress()/100;
+                callBack.seekTo((int)(scale * musicInfo.getLength()));
             }
         });
     }
@@ -97,4 +99,29 @@ public class PlayLayout extends LinearLayout {
         seekBar.setProgress((int)((float)(playedMill) / musicInfo.getLength()) * 100);
     }
 
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+        Log.e("soar" , "playlayout   onInterceptTouchEvent");
+        return super.onInterceptTouchEvent(ev);
+
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        Log.e("soar" , "playlayout   onTouchEvent");
+        return super.onTouchEvent(event);
+    }
+
+
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        Log.e("soar" , "playlayout   dispatchTouchEvent");
+        if(getLayoutFrames().getStatus() == LayoutFrames.STATE_PLAY){
+            return super.dispatchTouchEvent(ev);
+        }else{
+            return false;
+        }
+    }
 }

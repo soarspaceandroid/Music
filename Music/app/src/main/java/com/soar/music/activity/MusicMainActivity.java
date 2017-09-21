@@ -12,7 +12,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -21,6 +20,7 @@ import android.widget.ListView;
 import com.soar.music.R;
 import com.soar.music.adapters.MusicListAdapter;
 import com.soar.music.helpers.MusicMainHelper;
+import com.soar.music.interfaces.ItemClickLisenter;
 import com.soar.music.interfaces.MusicMainInter;
 import com.soar.music.interfaces.MusicPlayTimeLisenter;
 import com.soar.music.interfaces.MusicScanLisenter;
@@ -78,9 +78,12 @@ public class MusicMainActivity extends AppCompatActivity {
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
+
+            Log.e("soar" , "connect");
             callBack = (SoarPlayService.MyBinder)service;
             callBack.setMusicList(musicList);
             callBack.setPlayTimeLisenter(musicPlayTimeLisenter);
+            playLayout.setCallBack(callBack);
         }
         @Override
 
@@ -116,11 +119,9 @@ public class MusicMainActivity extends AppCompatActivity {
         root = (LinearLayout)findViewById(R.id.main_root);
 
 
-        musicListAdapter = new MusicListAdapter(this);
-        listView.setAdapter(musicListAdapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        musicListAdapter = new MusicListAdapter(this, new ItemClickLisenter() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            public void clickCallBack(int position) {
                 callBack.playMusicByPosition(position);
                 mCurrentMusicInfo = musicList.get(position);
                 layoutFrames.changeStatus(LayoutFrames.STATE_PLAY);
@@ -128,6 +129,7 @@ public class MusicMainActivity extends AppCompatActivity {
                 playLayout.updateUI(mCurrentMusicInfo);
             }
         });
+        listView.setAdapter(musicListAdapter);
         scanButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -153,7 +155,6 @@ public class MusicMainActivity extends AppCompatActivity {
         initListView(listView);
 
         playLayout = new PlayLayout(this);
-        playLayout.setCallBack(callBack);
 
         View lyiceView = layoutInflater.inflate(R.layout.layout_lyice, null);
         initLyiceView(lyiceView);
