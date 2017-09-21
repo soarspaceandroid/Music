@@ -118,10 +118,6 @@ public class PlayLayout extends ParentLinearLayout {
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         Log.e("soar" , "playlayout   dispatchTouchEvent");
-        if(getLayoutFrames().getStatus() == LayoutFrames.STATE_PLAY){
-            return super.dispatchTouchEvent(ev);
-        }else{
-            return false;
-        }
+        return super.dispatchTouchEvent(ev);
     }
 }

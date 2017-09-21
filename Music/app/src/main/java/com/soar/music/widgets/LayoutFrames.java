@@ -32,7 +32,6 @@ public class LayoutFrames extends FrameLayout {
     private FrameLayout listLayout;
     private FrameLayout stackFirstLayout;
     private FrameLayout stackSecondLayout;
-    private FrameLayout guestLayout;
     private Context context;
 
     private float distance = 0; // 手势滑动 临界点
@@ -83,7 +82,6 @@ public class LayoutFrames extends FrameLayout {
         lyiceLayout = (FrameLayout)rootView.findViewById(R.id.lytis_layout);
         stackFirstLayout = (FrameLayout)rootView.findViewById(R.id.stack_first);
         stackSecondLayout = (FrameLayout)rootView.findViewById(R.id.stack_second);
-        guestLayout = (FrameLayout)rootView.findViewById(R.id.guesture_layout);
 
         playLayout.setTranslationY(getResources().getDisplayMetrics().heightPixels);
         listLayout.setTranslationY(-getResources().getDisplayMetrics().heightPixels);
@@ -102,116 +100,6 @@ public class LayoutFrames extends FrameLayout {
             }
         });
 
-        guestLayout.setOnTouchListener(new OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if(machine.getLocalCurrentState() == STATE_NONE){
-                    return false;
-                }
-                switch (event.getAction()){
-                    case MotionEvent.ACTION_DOWN:
-                        downX = event.getX();
-                        downY = event.getY();
-                        break;
-                    case MotionEvent.ACTION_MOVE:
-                        if(Math.abs(event.getX() - downX)  > Math.abs(event.getY() - downY) ){
-                            // 横滑
-                            if(event.getX() - downX > 0){
-                                // 右滑
-                                if(machine.getLocalCurrentState() == STATE_PLAY) {
-                                    settingLayout.setTranslationX(-getResources().getDisplayMetrics().widthPixels + event.getX() - downX);
-                                }else if(machine.getLocalCurrentState() == STATE_LYICE){
-                                    lyiceLayout.setTranslationX(event.getX() - downX);
-                                }
-                            }else{
-                                //左滑
-                                if(machine.getLocalCurrentState() == STATE_SETTING) {
-                                    settingLayout.setTranslationX(event.getX() - downX);
-                                }else if(machine.getLocalCurrentState() == STATE_PLAY){
-                                    lyiceLayout.setTranslationX(getResources().getDisplayMetrics().widthPixels + event.getX() - downX);
-                                }
-                            }
-                        }else{
-                            //竖滑
-                            if(event.getY() - downY > 0){
-                                //下拉
-                                if(machine.getLocalCurrentState() == STATE_PLAY){
-                                    playLayout.setTranslationY(event.getY() - downY);
-                                }
-                            }else{
-                                // 上啦
-                                if(machine.getLocalCurrentState() == STATE_NONE){
-                                    playLayout.setTranslationY(getResources().getDisplayMetrics().heightPixels - (event.getY() - downY));
-                                }
-                            }
-
-                        }
-
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        if(Math.abs(event.getX() - downX)  > Math.abs(event.getY() - downY) ){
-                            // 横滑
-                            if(Math.abs(event.getX() - downX) > getResources().getDisplayMetrics().widthPixels/3){
-                                if(machine.getLocalCurrentState() == STATE_SETTING){
-                                    AnimHelper.transX(settingLayout , settingLayout.getTranslationX() , -getResources().getDisplayMetrics().widthPixels);
-                                    changeStatus(STATE_PLAY);
-                                }else if(machine.getLocalCurrentState() == STATE_LYICE){
-                                    AnimHelper.transX(lyiceLayout , lyiceLayout.getTranslationX() , getResources().getDisplayMetrics().widthPixels);
-                                    changeStatus(STATE_PLAY);
-                                }else if(machine.getLocalCurrentState() == STATE_PLAY){
-                                    if(event.getX() - downX > 0){
-                                        //右滑
-                                        AnimHelper.transX(settingLayout , settingLayout.getTranslationX() , 0);
-                                        changeStatus(STATE_SETTING);
-                                    }else{
-                                        AnimHelper.transX(lyiceLayout , lyiceLayout.getTranslationX() , 0);
-                                        changeStatus(STATE_LYICE);
-                                    }
-                                }
-                            }else{
-                                // 回归中心
-                                if(machine.getLocalCurrentState() == STATE_SETTING){
-                                    AnimHelper.transX(settingLayout , settingLayout.getTranslationX() , 0);
-                                    changeStatus(STATE_SETTING);
-                                }else if(machine.getLocalCurrentState() == STATE_LYICE){
-                                    AnimHelper.transX(lyiceLayout , lyiceLayout.getTranslationX() , 0);
-                                    changeStatus(STATE_LYICE);
-                                }else if(machine.getLocalCurrentState() == STATE_PLAY){
-                                    if(event.getX() - downX > 0){
-                                        //右滑
-                                        AnimHelper.transX(settingLayout , settingLayout.getTranslationX() , -getResources().getDisplayMetrics().widthPixels);
-                                        changeStatus(STATE_PLAY);
-                                    }else{
-                                        AnimHelper.transX(lyiceLayout , lyiceLayout.getTranslationX() , getResources().getDisplayMetrics().widthPixels);
-                                        changeStatus(STATE_PLAY);
-                                    }
-                                }
-                            }
-
-                        }else{
-                            if(Math.abs(event.getY() - downY) > getResources().getDisplayMetrics().heightPixels/3){
-                                if(machine.getLocalCurrentState() == STATE_PLAY){
-                                    AnimHelper.transY(playLayout , playLayout.getTranslationY() , getResources().getDisplayMetrics().heightPixels);
-                                    changeStatus(STATE_NONE);
-                                    hideBack();
-                                }
-                            }else{
-                                if(machine.getLocalCurrentState() == STATE_PLAY){
-                                    AnimHelper.transY(playLayout , playLayout.getTranslationY() , 0);
-                                }
-
-                            }
-
-                        }
-
-                        break;
-                    case MotionEvent.ACTION_CANCEL:
-
-                        break;
-                }
-                return true;
-            }
-        });
 
     }
 
@@ -341,4 +229,115 @@ public class LayoutFrames extends FrameLayout {
         lyiceLayout.addView(view);
     }
 
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if(machine.getLocalCurrentState() == STATE_NONE){
+            return super.onTouchEvent(event);
+        }
+        switch (event.getAction()){
+            case MotionEvent.ACTION_DOWN:
+                downX = event.getX();
+                downY = event.getY();
+                break;
+            case MotionEvent.ACTION_MOVE:
+                if(Math.abs(event.getX() - downX)  > Math.abs(event.getY() - downY) ){
+                    // 横滑
+                    if(event.getX() - downX > 0){
+                        // 右滑
+                        if(machine.getLocalCurrentState() == STATE_PLAY) {
+                            settingLayout.setTranslationX(-getResources().getDisplayMetrics().widthPixels + event.getX() - downX);
+                        }else if(machine.getLocalCurrentState() == STATE_LYICE){
+                            lyiceLayout.setTranslationX(event.getX() - downX);
+                        }
+                    }else{
+                        //左滑
+                        if(machine.getLocalCurrentState() == STATE_SETTING) {
+                            settingLayout.setTranslationX(event.getX() - downX);
+                        }else if(machine.getLocalCurrentState() == STATE_PLAY){
+                            lyiceLayout.setTranslationX(getResources().getDisplayMetrics().widthPixels + event.getX() - downX);
+                        }
+                    }
+                }else{
+                    //竖滑
+                    if(event.getY() - downY > 0){
+                        //下拉
+                        if(machine.getLocalCurrentState() == STATE_PLAY){
+                            playLayout.setTranslationY(event.getY() - downY);
+                        }
+                    }else{
+                        // 上啦
+                        if(machine.getLocalCurrentState() == STATE_NONE){
+                            playLayout.setTranslationY(getResources().getDisplayMetrics().heightPixels - (event.getY() - downY));
+                        }
+                    }
+
+                }
+
+                break;
+            case MotionEvent.ACTION_UP:
+                if(Math.abs(event.getX() - downX)  > Math.abs(event.getY() - downY) ){
+                    // 横滑
+                    if(Math.abs(event.getX() - downX) > getResources().getDisplayMetrics().widthPixels/3){
+                        if(machine.getLocalCurrentState() == STATE_SETTING){
+                            AnimHelper.transX(settingLayout , settingLayout.getTranslationX() , -getResources().getDisplayMetrics().widthPixels);
+                            changeStatus(STATE_PLAY);
+                        }else if(machine.getLocalCurrentState() == STATE_LYICE){
+                            AnimHelper.transX(lyiceLayout , lyiceLayout.getTranslationX() , getResources().getDisplayMetrics().widthPixels);
+                            changeStatus(STATE_PLAY);
+                        }else if(machine.getLocalCurrentState() == STATE_PLAY){
+                            if(event.getX() - downX > 0){
+                                //右滑
+                                AnimHelper.transX(settingLayout , settingLayout.getTranslationX() , 0);
+                                changeStatus(STATE_SETTING);
+                            }else{
+                                AnimHelper.transX(lyiceLayout , lyiceLayout.getTranslationX() , 0);
+                                changeStatus(STATE_LYICE);
+                            }
+                        }
+                    }else{
+                        // 回归中心
+                        if(machine.getLocalCurrentState() == STATE_SETTING){
+                            AnimHelper.transX(settingLayout , settingLayout.getTranslationX() , 0);
+                            changeStatus(STATE_SETTING);
+                        }else if(machine.getLocalCurrentState() == STATE_LYICE){
+                            AnimHelper.transX(lyiceLayout , lyiceLayout.getTranslationX() , 0);
+                            changeStatus(STATE_LYICE);
+                        }else if(machine.getLocalCurrentState() == STATE_PLAY){
+                            if(event.getX() - downX > 0){
+                                //右滑
+                                AnimHelper.transX(settingLayout , settingLayout.getTranslationX() , -getResources().getDisplayMetrics().widthPixels);
+                                changeStatus(STATE_PLAY);
+                            }else{
+                                AnimHelper.transX(lyiceLayout , lyiceLayout.getTranslationX() , getResources().getDisplayMetrics().widthPixels);
+                                changeStatus(STATE_PLAY);
+                            }
+                        }
+                    }
+
+                }else{
+                    if(Math.abs(event.getY() - downY) > getResources().getDisplayMetrics().heightPixels/3){
+                        if(machine.getLocalCurrentState() == STATE_PLAY){
+                            AnimHelper.transY(playLayout , playLayout.getTranslationY() , getResources().getDisplayMetrics().heightPixels);
+                            changeStatus(STATE_NONE);
+                            hideBack();
+                        }
+                    }else{
+                        if(machine.getLocalCurrentState() == STATE_PLAY){
+                            AnimHelper.transY(playLayout , playLayout.getTranslationY() , 0);
+                        }
+
+                    }
+
+                }
+
+                break;
+            case MotionEvent.ACTION_CANCEL:
+
+                break;
+
+        }
+        return true;
+
+    }
 }
