@@ -15,12 +15,27 @@ import java.util.ArrayList;
 /**
  * Created by gaofei on 2016/12/26.
  */
-public class SoarPlayService extends Service {
+public class SoarPlayService extends Service{
 
     private MediaPlayer mPlayer;
     public ArrayList<MusicInfo> musicPathLists;
     private MusicPlayTimeLisenter playTimeLisenter ;
     private int currentPos;
+
+    private Thread thread = new Thread(new Runnable() {
+        @Override
+        public void run() {
+            while (!isStop){
+                try {
+                    Thread.sleep(800);
+                    playTimeLisenter.updateTimeUI(mPlayer.getCurrentPosition());
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        }
+    });
+    private boolean isStop = true;
 
     public interface CallBack {
         void playMusicByPosition(int position);
@@ -125,8 +140,7 @@ public class SoarPlayService extends Service {
     }
 
 
-
-        @Override
+    @Override
         public void onCreate() {
             super.onCreate();
             mPlayer = new MediaPlayer();
@@ -159,16 +173,19 @@ public class SoarPlayService extends Service {
         public boolean toPlay() {
             if (mPlayer.isPlaying()) {
                 mPlayer.pause();
+                isStop = true;
+                thread.interrupt();
                 return false;
             } else {
                 mPlayer.start();
+                isStop = false;
+                thread.start();
                 return true;
             }
         }
 
 
-
-        @Override
+    @Override
         public IBinder onBind(Intent intent) {
             return new MyBinder();
         }

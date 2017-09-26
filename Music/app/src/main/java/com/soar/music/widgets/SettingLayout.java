@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -305,24 +304,5 @@ public class SettingLayout extends ParentLinearLayout {
 
             }
         });
-    }
-
-    @Override
-    public boolean onInterceptTouchEvent(MotionEvent ev) {
-        Log.e("soar" , "settinglayot   onInterceptTouchEvent");
-        return false;
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        Log.e("soar" , "settinglayot   onTouchEvent");
-        return super.onTouchEvent(event);
-    }
-
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent ev) {
-        Log.e("soar" , "settinglayot   dispatchTouchEvent");
-        return super.dispatchTouchEvent(ev);
-
     }
 }

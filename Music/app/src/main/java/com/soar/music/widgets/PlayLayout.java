@@ -4,9 +4,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -51,7 +49,6 @@ public class PlayLayout extends ParentLinearLayout {
         initView();
     }
     public void setCallBack(SoarPlayService.CallBack callBack){
-        Log.e("soar" , "set back ");
         this.callBack = callBack;
     }
 
@@ -66,7 +63,8 @@ public class PlayLayout extends ParentLinearLayout {
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-
+                float scale = (float)seekBar.getProgress()/100;
+                playedText.setText(DateUtils.getLength((int)(scale * musicInfo.getLength())));
             }
 
             @Override
@@ -78,6 +76,7 @@ public class PlayLayout extends ParentLinearLayout {
             public void onStopTrackingTouch(SeekBar seekBar) {
                 float scale = (float)seekBar.getProgress()/100;
                 callBack.seekTo((int)(scale * musicInfo.getLength()));
+                playedText.setText(DateUtils.getLength((int)(scale * musicInfo.getLength())));
             }
         });
     }
@@ -94,30 +93,18 @@ public class PlayLayout extends ParentLinearLayout {
 
 
 
-    public void updateTime(long playedMill){
-        playedText.setText(DateUtils.getLength(playedMill));
-        seekBar.setProgress((int)((float)(playedMill) / musicInfo.getLength()) * 100);
+    public void updateTime(final long playedMill){
+        if(musicInfo != null) {
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    playedText.setText(DateUtils.getLength(playedMill));
+                    seekBar.setProgress((int) ((float) (playedMill) / musicInfo.getLength() * 100));
+                }
+            });
+
+        }
     }
 
 
-    @Override
-    public boolean onInterceptTouchEvent(MotionEvent ev) {
-        Log.e("soar" , "playlayout   onInterceptTouchEvent");
-        return super.onInterceptTouchEvent(ev);
-
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        Log.e("soar" , "playlayout   onTouchEvent");
-        return super.onTouchEvent(event);
-    }
-
-
-
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent ev) {
-        Log.e("soar" , "playlayout   dispatchTouchEvent");
-        return super.dispatchTouchEvent(ev);
-    }
 }
