@@ -5,12 +5,16 @@ import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.IBinder;
+import android.util.Log;
 
 import com.soar.music.interfaces.MusicPlayTimeLisenter;
 import com.soar.music.model.MusicInfo;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by gaofei on 2016/12/26.
@@ -22,20 +26,7 @@ public class SoarPlayService extends Service{
     private MusicPlayTimeLisenter playTimeLisenter ;
     private int currentPos;
 
-    private Thread thread = new Thread(new Runnable() {
-        @Override
-        public void run() {
-            while (!isStop){
-                try {
-                    Thread.sleep(800);
-                    playTimeLisenter.updateTimeUI(mPlayer.getCurrentPosition());
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-            }
-        }
-    });
-    private boolean isStop = true;
+    private ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(3);
 
     public interface CallBack {
         void playMusicByPosition(int position);
@@ -173,13 +164,16 @@ public class SoarPlayService extends Service{
         public boolean toPlay() {
             if (mPlayer.isPlaying()) {
                 mPlayer.pause();
-                isStop = true;
-                thread.interrupt();
+                scheduledExecutorService.shutdown();
                 return false;
             } else {
                 mPlayer.start();
-                isStop = false;
-                thread.start();
+                scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
+                    @Override
+                    public void run() {
+                        playTimeLisenter.updateTimeUI(mPlayer.getCurrentPosition());
+                    }
+                },0 , 1 , TimeUnit.SECONDS);
                 return true;
             }
         }

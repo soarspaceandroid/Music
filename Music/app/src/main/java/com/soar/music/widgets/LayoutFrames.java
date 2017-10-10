@@ -11,6 +11,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import com.soar.music.R;
+import com.soar.music.activity.MusicMainActivity;
 import com.soar.music.statemachine.BaseStatesMachine;
 import com.soar.music.statemachine.UIUpdateInter;
 import com.soar.music.utils.AnimHelper;
@@ -89,17 +90,7 @@ public class LayoutFrames extends FrameLayout {
         settingLayout.setTranslationX(-getResources().getDisplayMetrics().widthPixels);
         stackFirstLayout.setTranslationX(-getResources().getDisplayMetrics().widthPixels);
         stackSecondLayout.setTranslationX(-getResources().getDisplayMetrics().widthPixels);
-
-
-        backLayout.setAlpha(0f);
-        backLayout.setVisibility(INVISIBLE);
-        backLayout.setOnTouchListener(new OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return false;
-            }
-        });
-
+        backLayout.setVisibility(GONE);
 
     }
 
@@ -126,12 +117,29 @@ public class LayoutFrames extends FrameLayout {
 
                         break;
                     case STATE_PLAY:
+                        post(new Runnable() {
+                            @Override
+                            public void run() {
+                                setVisibility(VISIBLE);
+                                if(context != null){
+                                    ((MusicMainActivity)context).updateBackAndOther();
+                                }
+                            }
+                        });
+
                         AnimHelper.transY(playLayout , playLayout.getTranslationY() , 0);
                         break;
                     case STATE_SETTING:
 
                         break;
                     case STATE_NONE:
+                        backLayout.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                hideBack();
+                            }
+                        });
+
                         break;
                 }
 
@@ -160,9 +168,16 @@ public class LayoutFrames extends FrameLayout {
     }
 
 
-    public void displayBack(View rootview){
-        BlurTools.blur(rootview, backLayout, 2, 6);
+    public void displayBack(final View rootview){
         backLayout.setVisibility(VISIBLE);
+        backLayout.post(new Runnable() {
+            @Override
+            public void run() {
+
+                BlurTools.blur(rootview, backLayout, 2, 6);
+            }
+        });
+
         ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(backLayout , "alpha" , 0f , 1f);
         objectAnimator.setDuration(AnimHelper.DURATIME);
         objectAnimator.start();
@@ -180,12 +195,14 @@ public class LayoutFrames extends FrameLayout {
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                backLayout.setVisibility(INVISIBLE);
+                backLayout.setVisibility(GONE);
+                setVisibility(GONE);
             }
 
             @Override
             public void onAnimationCancel(Animator animation) {
-                backLayout.setVisibility(INVISIBLE);
+                backLayout.setVisibility(GONE);
+                setVisibility(GONE);
             }
 
             @Override
@@ -228,7 +245,6 @@ public class LayoutFrames extends FrameLayout {
     public void addLyiceView(View view){
         lyiceLayout.addView(view);
     }
-
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -320,11 +336,11 @@ public class LayoutFrames extends FrameLayout {
                         if(machine.getLocalCurrentState() == STATE_PLAY){
                             AnimHelper.transY(playLayout , playLayout.getTranslationY() , getResources().getDisplayMetrics().heightPixels);
                             changeStatus(STATE_NONE);
-                            hideBack();
                         }
                     }else{
                         if(machine.getLocalCurrentState() == STATE_PLAY){
                             AnimHelper.transY(playLayout , playLayout.getTranslationY() , 0);
+                            changeStatus(STATE_PLAY);
                         }
 
                     }

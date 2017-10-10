@@ -7,7 +7,6 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -59,7 +58,6 @@ public class MusicMainActivity extends AppCompatActivity {
     private MusicPlayTimeLisenter musicPlayTimeLisenter = new MusicPlayTimeLisenter() {
         @Override
         public void updateTimeUI(long mill) {
-            Log.e("soar" , "test ---");
             playLayout.updateTime(mill);
         }
     };
@@ -70,7 +68,6 @@ public class MusicMainActivity extends AppCompatActivity {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
 
-            Log.e("soar" , "connect");
             callBack = (SoarPlayService.MyBinder)service;
             callBack.setMusicList(musicList);
             callBack.setPlayTimeLisenter(musicPlayTimeLisenter);
@@ -116,8 +113,7 @@ public class MusicMainActivity extends AppCompatActivity {
                 callBack.playMusicByPosition(position);
                 mCurrentMusicInfo = musicList.get(position);
                 layoutFrames.changeStatus(LayoutFrames.STATE_PLAY);
-                musicMainHelper.blueMainUI(MusicMainActivity.this , root , layoutFrames);
-                playLayout.updateUI(mCurrentMusicInfo);
+
             }
         });
         listView.setAdapter(musicListAdapter);
@@ -184,6 +180,17 @@ public class MusicMainActivity extends AppCompatActivity {
 
     }
 
+
+    public void updateBackAndOther(){
+        layoutFrames.post(new Runnable() {
+            @Override
+            public void run() {
+                musicMainHelper.blueMainUI(MusicMainActivity.this , root , layoutFrames);
+            }
+        });
+
+        playLayout.updateUI(mCurrentMusicInfo);
+    }
 
 
 }
