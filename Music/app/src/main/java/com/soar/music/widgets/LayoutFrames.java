@@ -1,6 +1,5 @@
 package com.soar.music.widgets;
 
-import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.util.AttributeSet;
@@ -12,6 +11,7 @@ import android.widget.ImageView;
 
 import com.soar.music.R;
 import com.soar.music.activity.MusicMainActivity;
+import com.soar.music.interfaces.OnfinishLisenter;
 import com.soar.music.statemachine.BaseStatesMachine;
 import com.soar.music.statemachine.UIUpdateInter;
 import com.soar.music.utils.AnimHelper;
@@ -90,7 +90,7 @@ public class LayoutFrames extends FrameLayout {
         settingLayout.setTranslationX(-getResources().getDisplayMetrics().widthPixels);
         stackFirstLayout.setTranslationX(-getResources().getDisplayMetrics().widthPixels);
         stackSecondLayout.setTranslationX(-getResources().getDisplayMetrics().widthPixels);
-        backLayout.setVisibility(GONE);
+        backLayout.setAlpha(0f);
 
     }
 
@@ -169,48 +169,25 @@ public class LayoutFrames extends FrameLayout {
 
 
     public void displayBack(final View rootview){
-        backLayout.setVisibility(VISIBLE);
         backLayout.post(new Runnable() {
             @Override
             public void run() {
-
-                BlurTools.blur(rootview, backLayout, 2, 6);
+                BlurTools.blur((MusicMainActivity) context , rootview, backLayout , new OnfinishLisenter(){
+                    @Override
+                    public void onFinish() {
+                        ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(backLayout , "alpha" , 0f , 1f);
+                        objectAnimator.setDuration(AnimHelper.DURATIME);
+                        objectAnimator.start();
+                    }
+                });
             }
         });
-
-        ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(backLayout , "alpha" , 0f , 1f);
-        objectAnimator.setDuration(AnimHelper.DURATIME);
-        objectAnimator.start();
     }
 
 
     public void hideBack(){
-        ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(backLayout , "alpha" , 1f , 0f);
-        objectAnimator.setDuration(AnimHelper.DURATIME);
-        objectAnimator.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                backLayout.setVisibility(GONE);
-                setVisibility(GONE);
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-                backLayout.setVisibility(GONE);
-                setVisibility(GONE);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animation) {
-
-            }
-        });
-        objectAnimator.start();
+        backLayout.setAlpha(0f);
+        setVisibility(GONE);
     }
 
     /**
@@ -334,7 +311,13 @@ public class LayoutFrames extends FrameLayout {
                 }else{
                     if(Math.abs(event.getY() - downY) > getResources().getDisplayMetrics().heightPixels/3){
                         if(machine.getLocalCurrentState() == STATE_PLAY){
-                            AnimHelper.transY(playLayout , playLayout.getTranslationY() , getResources().getDisplayMetrics().heightPixels);
+                            AnimHelper.transY(playLayout, playLayout.getTranslationY(), getResources().getDisplayMetrics().heightPixels, new OnfinishLisenter() {
+                                @Override
+                                public void onFinish() {
+                                    backLayout.setAlpha(0f);
+                                    setVisibility(GONE);
+                                }
+                            });
                             changeStatus(STATE_NONE);
                         }
                     }else{
